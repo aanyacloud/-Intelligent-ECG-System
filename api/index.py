@@ -7,17 +7,23 @@ from backend.adaptive_filter import adaptive_filter
 from backend.sqi import compute_sqi, compute_confidence
 from backend.hr_analysis import compute_rr, compute_hr, compute_hrv
 
+
 def detect_r_peaks(signal, fs):
     norm = (signal - np.mean(signal)) / (np.std(signal) + 1e-8)
     enhanced = norm ** 2
+
     window = int(0.12 * fs)
     enhanced = np.convolve(enhanced, np.ones(window)/window, mode='same')
+
     threshold = np.mean(enhanced) + 0.5 * np.std(enhanced)
     distance = int(0.4 * fs)
+
     peaks, _ = find_peaks(enhanced, height=threshold, distance=distance)
     return peaks
 
+
 class handler(BaseHTTPRequestHandler):
+
     def _ok(self, payload):
         self.send_response(200)
         self.send_header("Content-type", "application/json")
@@ -42,8 +48,14 @@ class handler(BaseHTTPRequestHandler):
             signal = np.array(data.get("signal", []), dtype=float)
             fs = int(data.get("fs", 360))
 
-            if signal.size < fs:  # <1 second is too short
-                return self._err("Signal too short (need >= 1 sec)", 400)
+            # ❌ empty signal check
+            if signal.size == 0:
+                return self._err("Empty signal", 400)
+
+            # ✅ auto-extend short signal
+            if signal.size < fs:
+                repeats = int(np.ceil(fs / signal.size))
+                signal = np.tile(signal, repeats)[:fs]
 
             # 1) Denoise
             filtered, _ = adaptive_filter(signal, fs)
@@ -55,8 +67,10 @@ class handler(BaseHTTPRequestHandler):
             # 3) R-peaks → RR → HR/HRV
             peaks = detect_r_peaks(filtered, fs)
             rr = compute_rr(peaks, fs)
+
             hr = compute_hr(rr)
-            hr = hr[(hr > 40) & (hr < 180)]  # basic sanity filter
+            hr = hr[(hr > 40) & (hr < 180)]
+
             hrv = compute_hrv(rr)
 
             avg_hr = float(np.mean(hr)) if hr.size else 0.0
