@@ -1,6 +1,7 @@
 numpy
 scipy
 matplotlib
-streamlit
+numpy
+scipy
 wfdb
 pandas
