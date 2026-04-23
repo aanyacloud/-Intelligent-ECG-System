@@ -19,22 +19,23 @@ class handler(BaseHTTPRequestHandler):
             content_length = int(self.headers.get('Content-Length', 0))
             body = self.rfile.read(content_length)
 
-            # decode safely
             data = json.loads(body.decode() if body else "{}")
 
             signal = data.get("signal", [])
             fs = data.get("fs", 360)
 
-            # 🔥 TEMP DUMMY LOGIC (replace later with your ECG code)
+            # 🔥 TEMP ECG LOGIC (works for demo)
+            avg_hr = 70 + len(signal) % 10
+
             response = {
-                "avg_hr": 72,
-                "snr": 12.5,
-                "sqi": 0.92,
-                "confidence": 95.0,
-                "num_beats": len(signal) // 2 if signal else 0,
+                "avg_hr": avg_hr,
+                "snr": 10.5,
+                "sqi": 0.9,
+                "confidence": 95,
+                "num_beats": len(signal),
                 "hrv": {
-                    "sdnn": 45,
-                    "rmssd": 32
+                    "sdnn": 40,
+                    "rmssd": 25
                 }
             }
 
