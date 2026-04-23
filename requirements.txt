@@ -1,7 +1,2 @@
 numpy
 scipy
-matplotlib
-numpy
-scipy
-wfdb
-pandas

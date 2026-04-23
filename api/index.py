@@ -48,23 +48,19 @@ class handler(BaseHTTPRequestHandler):
             signal = np.array(data.get("signal", []), dtype=float)
             fs = int(data.get("fs", 360))
 
-            # ❌ empty signal check
             if signal.size == 0:
                 return self._err("Empty signal", 400)
 
-            # ✅ auto-extend short signal
+            # 🔥 AUTO FIX SHORT SIGNAL
             if signal.size < fs:
                 repeats = int(np.ceil(fs / signal.size))
                 signal = np.tile(signal, repeats)[:fs]
 
-            # 1) Denoise
             filtered, _ = adaptive_filter(signal, fs)
 
-            # 2) SQI + confidence
             sqi, snr = compute_sqi(filtered, fs)
             confidence = compute_confidence(sqi)
 
-            # 3) R-peaks → RR → HR/HRV
             peaks = detect_r_peaks(filtered, fs)
             rr = compute_rr(peaks, fs)
 

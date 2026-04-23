@@ -3,39 +3,10 @@
 <head>
     <title>Intelligent ECG System</title>
     <style>
-        body {
-            font-family: Arial;
-            padding: 30px;
-            background: #f5f5f5;
-        }
-
-        h1 { color: #333; }
-
-        textarea {
-            width: 100%;
-            height: 120px;
-            padding: 10px;
-            margin-top: 10px;
-        }
-
-        button {
-            margin-top: 15px;
-            padding: 10px 20px;
-            font-size: 16px;
-            background: #0070f3;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-
-        button:hover { background: #0059c1; }
-
-        .card {
-            margin-top: 20px;
-            padding: 15px;
-            background: white;
-            border-radius: 8px;
-        }
+        body { font-family: Arial; padding: 30px; background: #f5f5f5; }
+        textarea { width: 100%; height: 120px; padding: 10px; }
+        button { margin-top: 15px; padding: 10px 20px; background: #0070f3; color: white; border: none; }
+        .card { margin-top: 20px; padding: 15px; background: white; border-radius: 8px; }
     </style>
 </head>
 
@@ -43,14 +14,11 @@
 
 <h1>🫀 Intelligent ECG System</h1>
 
-<p>Enter ECG signal values (comma-separated):</p>
+<p>Enter ECG signal values:</p>
 
-<textarea id="input">
-0.1,0.2,0.3,0.5,0.2,0.1,0.3,0.6,0.2
-</textarea>
+<textarea id="input">0.1,0.2,0.3,0.5,0.2,0.1,0.3,0.6,0.2</textarea>
 
 <br>
-
 <button onclick="analyze()">Analyze ECG</button>
 
 <div id="output" class="card" style="display:none;">
@@ -63,41 +31,35 @@ async function analyze() {
     const raw = document.getElementById("input").value;
     const signal = raw.split(",").map(Number);
 
-    try {
-        const res = await fetch("/api/index", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                signal: signal,
-                fs: 360
-            })
-        });
+    const res = await fetch("/api/index", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            signal: signal,
+            fs: 360
+        })
+    });
 
-        const data = await res.json();
+    const data = await res.json();
 
-        document.getElementById("output").style.display = "block";
+    document.getElementById("output").style.display = "block";
 
-        if (data.error) {
-            document.getElementById("results").innerHTML =
-                `<p style="color:red;">Error: ${data.error}</p>`;
-            return;
-        }
-
-        document.getElementById("results").innerHTML = `
-            <p><b>Average HR:</b> ${data.avg_hr} BPM</p>
-            <p><b>SNR:</b> ${data.snr}</p>
-            <p><b>SQI:</b> ${data.sqi}</p>
-            <p><b>Confidence:</b> ${data.confidence}%</p>
-            <p><b>Beats:</b> ${data.num_beats}</p>
-            <p><b>HRV:</b> ${JSON.stringify(data.hrv)}</p>
-        `;
-
-    } catch (err) {
+    if (data.error) {
         document.getElementById("results").innerHTML =
-            `<p style="color:red;">Fetch error</p>`;
+            `<p style="color:red;">Error: ${data.error}</p>`;
+        return;
     }
+
+    document.getElementById("results").innerHTML = `
+        <p><b>Average HR:</b> ${data.avg_hr.toFixed(2)} BPM</p>
+        <p><b>SNR:</b> ${data.snr.toFixed(2)}</p>
+        <p><b>SQI:</b> ${data.sqi.toFixed(2)}</p>
+        <p><b>Confidence:</b> ${data.confidence.toFixed(2)}%</p>
+        <p><b>Beats:</b> ${data.num_beats}</p>
+        <p><b>HRV:</b> ${JSON.stringify(data.hrv)}</p>
+    `;
 }
 </script>
 
