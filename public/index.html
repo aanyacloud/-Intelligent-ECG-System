@@ -1,78 +1,9 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Intelligent ECG System</title>
-    <style>
-        body {
-            font-family: Arial;
-            padding: 30px;
-            background: #f5f5f5;
-        }
-
-        h1 {
-            color: #333;
-        }
-
-        textarea {
-            width: 100%;
-            height: 120px;
-            padding: 10px;
-            margin-top: 10px;
-        }
-
-        button {
-            margin-top: 15px;
-            padding: 10px 20px;
-            font-size: 16px;
-            background: #0070f3;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background: #0059c1;
-        }
-
-        .card {
-            margin-top: 20px;
-            padding: 15px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        .metric {
-            margin: 5px 0;
-        }
-    </style>
-</head>
-
-<body>
-
-<h1>🫀 Intelligent ECG System</h1>
-
-<p>Enter ECG signal values (comma-separated):</p>
-
-<textarea id="input">
-0.1,0.2,0.3,0.5,0.2,0.1,0.3,0.6,0.2
-</textarea>
-
-<br>
-
-<button onclick="analyze()">Analyze ECG</button>
-
-<div id="output" class="card" style="display:none;">
-    <h3>Results</h3>
-    <div id="results"></div>
-</div>
-
 <script>
 async function analyze() {
     const raw = document.getElementById("input").value;
     const signal = raw.split(",").map(Number);
 
-    const res = await fetch("/api", {
+    const res = await fetch("/api/index", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -94,15 +25,12 @@ async function analyze() {
     }
 
     document.getElementById("results").innerHTML = `
-        <div class="metric"><b>Average HR:</b> ${data.avg_hr.toFixed(2)} BPM</div>
-        <div class="metric"><b>SNR:</b> ${data.snr.toFixed(2)} dB</div>
-        <div class="metric"><b>SQI:</b> ${data.sqi.toFixed(2)}</div>
-        <div class="metric"><b>Confidence:</b> ${data.confidence.toFixed(2)} %</div>
-        <div class="metric"><b>Beats Detected:</b> ${data.num_beats}</div>
-        <div class="metric"><b>HRV:</b> ${JSON.stringify(data.hrv)}</div>
+        <div class="metric"><b>Average HR:</b> ${data.avg_hr?.toFixed(2) || 0} BPM</div>
+        <div class="metric"><b>SNR:</b> ${data.snr?.toFixed(2) || 0} dB</div>
+        <div class="metric"><b>SQI:</b> ${data.sqi?.toFixed(2) || 0}</div>
+        <div class="metric"><b>Confidence:</b> ${data.confidence?.toFixed(2) || 0} %</div>
+        <div class="metric"><b>Beats Detected:</b> ${data.num_beats || 0}</div>
+        <div class="metric"><b>HRV:</b> ${JSON.stringify(data.hrv || {})}</div>
     `;
 }
 </script>
-
-</body>
-</html>
