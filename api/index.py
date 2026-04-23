@@ -1,52 +1,74 @@
 from http.server import BaseHTTPRequestHandler
 import json
+import numpy as np
+from scipy.signal import find_peaks
+
+from backend.adaptive_filter import adaptive_filter
+from backend.sqi import compute_sqi, compute_confidence
+from backend.hr_analysis import compute_rr, compute_hr, compute_hrv
+
+def detect_r_peaks(signal, fs):
+    norm = (signal - np.mean(signal)) / (np.std(signal) + 1e-8)
+    enhanced = norm ** 2
+    window = int(0.12 * fs)
+    enhanced = np.convolve(enhanced, np.ones(window)/window, mode='same')
+    threshold = np.mean(enhanced) + 0.5 * np.std(enhanced)
+    distance = int(0.4 * fs)
+    peaks, _ = find_peaks(enhanced, height=threshold, distance=distance)
+    return peaks
 
 class handler(BaseHTTPRequestHandler):
-
-    def _set_headers(self):
+    def _ok(self, payload):
         self.send_response(200)
         self.send_header("Content-type", "application/json")
         self.end_headers()
+        self.wfile.write(json.dumps(payload).encode())
+
+    def _err(self, msg, code=500):
+        self.send_response(code)
+        self.send_header("Content-type", "application/json")
+        self.end_headers()
+        self.wfile.write(json.dumps({"error": msg}).encode())
 
     def do_GET(self):
-        self._set_headers()
-        self.wfile.write(json.dumps({
-            "message": "API WORKING ✅"
-        }).encode())
+        self._ok({"message": "API WORKING ✅"})
 
     def do_POST(self):
         try:
-            content_length = int(self.headers.get('Content-Length', 0))
-            body = self.rfile.read(content_length)
-
+            length = int(self.headers.get('Content-Length', 0))
+            body = self.rfile.read(length)
             data = json.loads(body.decode() if body else "{}")
 
-            signal = data.get("signal", [])
-            fs = data.get("fs", 360)
+            signal = np.array(data.get("signal", []), dtype=float)
+            fs = int(data.get("fs", 360))
 
-            # 🔥 TEMP ECG LOGIC (works for demo)
-            avg_hr = 70 + len(signal) % 10
+            if signal.size < fs:  # <1 second is too short
+                return self._err("Signal too short (need >= 1 sec)", 400)
 
-            response = {
+            # 1) Denoise
+            filtered, _ = adaptive_filter(signal, fs)
+
+            # 2) SQI + confidence
+            sqi, snr = compute_sqi(filtered, fs)
+            confidence = compute_confidence(sqi)
+
+            # 3) R-peaks → RR → HR/HRV
+            peaks = detect_r_peaks(filtered, fs)
+            rr = compute_rr(peaks, fs)
+            hr = compute_hr(rr)
+            hr = hr[(hr > 40) & (hr < 180)]  # basic sanity filter
+            hrv = compute_hrv(rr)
+
+            avg_hr = float(np.mean(hr)) if hr.size else 0.0
+
+            self._ok({
                 "avg_hr": avg_hr,
-                "snr": 10.5,
-                "sqi": 0.9,
-                "confidence": 95,
-                "num_beats": len(signal),
-                "hrv": {
-                    "sdnn": 40,
-                    "rmssd": 25
-                }
-            }
-
-            self._set_headers()
-            self.wfile.write(json.dumps(response).encode())
+                "snr": float(snr),
+                "sqi": float(sqi),
+                "confidence": float(confidence),
+                "num_beats": int(len(peaks)),
+                "hrv": hrv
+            })
 
         except Exception as e:
-            self.send_response(500)
-            self.send_header("Content-type", "application/json")
-            self.end_headers()
-
-            self.wfile.write(json.dumps({
-                "error": str(e)
-            }).encode())
+            self._err(str(e))
