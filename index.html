@@ -33,6 +33,8 @@
       background:white; padding:15px; border-radius:10px;
       width:160px; box-shadow:0 2px 5px rgba(0,0,0,0.1);
     }
+
+    canvas { margin-top:20px; }
   </style>
 </head>
 
@@ -47,38 +49,51 @@ function App() {
 
   const runAnalysis = async () => {
 
-    // 🔥 Generate dynamic signal (NOT hardcoded static value)
+    // 🔥 dynamic ECG-like signal
     const signal = Array.from({length: 360}, (_, i) =>
       Math.sin(i/10) + Math.random()*0.2
     );
 
-    const res = await fetch('/api/index', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({
-        signal: signal,
-        fs: 360
-      })
-    });
+    try {
+      const res = await fetch('/api/index', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+          signal: signal,
+          fs: 360
+        })
+      });
 
-    const result = await res.json();
-    setData(result);
+      const result = await res.json();
+      setData(result);
 
-    // Draw graph
-    const ctx = document.getElementById('chart').getContext('2d');
-    if (chartRef.current) chartRef.current.destroy();
+      // Draw graph
+      const ctx = document.getElementById('chart').getContext('2d');
+      if (chartRef.current) chartRef.current.destroy();
 
-    chartRef.current = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: result.signal.map((_, i) => i),
-        datasets: [{
-          label: 'Filtered ECG',
-          data: result.signal,
-          borderWidth: 1
-        }]
-      }
-    });
+      chartRef.current = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: signal.map((_, i) => i),   // ✅ FIXED
+          datasets: [{
+            label: 'ECG Signal',
+            data: signal,
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            x: { display: true },
+            y: { display: true }
+          }
+        }
+      });
+
+    } catch (err) {
+      console.error(err);
+      alert("API error — check backend");
+    }
   };
 
   return (
@@ -93,6 +108,8 @@ function App() {
       {/* Main */}
       <div className="main">
         <h1>📊 ECG Monitoring Dashboard</h1>
+
+        {!data && <p>Click "Run Analysis" to start</p>}
 
         {data && (
           <>
