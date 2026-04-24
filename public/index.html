@@ -1,67 +1,120 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Intelligent ECG System</title>
-    <style>
-        body { font-family: Arial; padding: 30px; background: #f5f5f5; }
-        textarea { width: 100%; height: 120px; padding: 10px; }
-        button { margin-top: 15px; padding: 10px 20px; background: #0070f3; color: white; border: none; }
-        .card { margin-top: 20px; padding: 15px; background: white; border-radius: 8px; }
-    </style>
+  <title>ECG Dashboard</title>
+
+  <!-- React -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+
+  <!-- Chart -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    body { margin:0; font-family: Arial; background:#f4f6f9; }
+    .app { display:flex; }
+
+    .sidebar {
+      width:250px; background:#111827; color:white; padding:20px;
+      height:100vh;
+    }
+
+    .sidebar button {
+      width:100%; padding:10px; margin-top:10px;
+      background:#2563eb; border:none; color:white; border-radius:5px;
+      cursor:pointer;
+    }
+
+    .main { flex:1; padding:20px; }
+
+    .cards { display:flex; gap:15px; flex-wrap:wrap; }
+    .card {
+      background:white; padding:15px; border-radius:10px;
+      width:160px; box-shadow:0 2px 5px rgba(0,0,0,0.1);
+    }
+  </style>
 </head>
 
 <body>
+<div id="root"></div>
 
-<h1>🫀 Intelligent ECG System</h1>
+<script type="text/babel">
 
-<p>Enter ECG signal values:</p>
+function App() {
+  const [data, setData] = React.useState(null);
+  const chartRef = React.useRef(null);
 
-<textarea id="input">0.1,0.2,0.3,0.5,0.2,0.1,0.3,0.6,0.2</textarea>
+  const runAnalysis = async () => {
 
-<br>
-<button onclick="analyze()">Analyze ECG</button>
+    // 🔥 Generate dynamic signal (NOT hardcoded static value)
+    const signal = Array.from({length: 360}, (_, i) =>
+      Math.sin(i/10) + Math.random()*0.2
+    );
 
-<div id="output" class="card" style="display:none;">
-    <h3>Results</h3>
-    <div id="results"></div>
-</div>
-
-<script>
-async function analyze() {
-    const raw = document.getElementById("input").value;
-    const signal = raw.split(",").map(Number);
-
-    const res = await fetch("/api/index", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            signal: signal,
-            fs: 360
-        })
+    const res = await fetch('/api/index', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        signal: signal,
+        fs: 360
+      })
     });
 
-    const data = await res.json();
+    const result = await res.json();
+    setData(result);
 
-    document.getElementById("output").style.display = "block";
+    // Draw graph
+    const ctx = document.getElementById('chart').getContext('2d');
+    if (chartRef.current) chartRef.current.destroy();
 
-    if (data.error) {
-        document.getElementById("results").innerHTML =
-            `<p style="color:red;">Error: ${data.error}</p>`;
-        return;
-    }
+    chartRef.current = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: result.signal.map((_, i) => i),
+        datasets: [{
+          label: 'Filtered ECG',
+          data: result.signal,
+          borderWidth: 1
+        }]
+      }
+    });
+  };
 
-    document.getElementById("results").innerHTML = `
-        <p><b>Average HR:</b> ${data.avg_hr.toFixed(2)} BPM</p>
-        <p><b>SNR:</b> ${data.snr.toFixed(2)}</p>
-        <p><b>SQI:</b> ${data.sqi.toFixed(2)}</p>
-        <p><b>Confidence:</b> ${data.confidence.toFixed(2)}%</p>
-        <p><b>Beats:</b> ${data.num_beats}</p>
-        <p><b>HRV:</b> ${JSON.stringify(data.hrv)}</p>
-    `;
+  return (
+    <div className="app">
+
+      {/* Sidebar */}
+      <div className="sidebar">
+        <h2>ECG System</h2>
+        <button onClick={runAnalysis}>Run Analysis</button>
+      </div>
+
+      {/* Main */}
+      <div className="main">
+        <h1>📊 ECG Monitoring Dashboard</h1>
+
+        {data && (
+          <>
+            <div className="cards">
+              <div className="card">❤️ HR<br/><b>{data.avg_hr.toFixed(2)}</b></div>
+              <div className="card">📈 SNR<br/><b>{data.snr.toFixed(2)}</b></div>
+              <div className="card">📊 SQI<br/><b>{data.sqi.toFixed(2)}</b></div>
+              <div className="card">✅ Conf<br/><b>{data.confidence.toFixed(2)}</b></div>
+              <div className="card">🔢 Beats<br/><b>{data.num_beats}</b></div>
+            </div>
+
+            <canvas id="chart"></canvas>
+          </>
+        )}
+      </div>
+
+    </div>
+  );
 }
-</script>
 
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+
+</script>
 </body>
 </html>
