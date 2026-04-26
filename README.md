@@ -1,7 +1,10 @@
 # ❤️ Intelligent ECG System
 
-An adaptive ECG signal processing system for **noise reduction, signal enhancement, and real-time physiological analysis** using frequency-domain techniques.
+![Python](https://img.shields.io/badge/Python-3.10-blue)
+![Streamlit](https://img.shields.io/badge/Framework-Streamlit-red)
+![Status](https://img.shields.io/badge/Status-Deployed-success)
 
+An adaptive ECG signal processing system for **noise reduction, signal enhancement, and real-time physiological analysis** using frequency-domain techniques.
 ---
 
 ## 🚀 Live Demo
@@ -87,13 +90,12 @@ An adaptive ECG signal processing system for **noise reduction, signal enhanceme
 pip install -r requirements.txt
 streamlit run app.py
 
----
 ☁️ Deployment
 
 Deployed using Streamlit Cloud
+🔗 https://6cmukok4vrrxpuz6frhvdy.streamlit.app/
 
----
-📄 Research Contribution
+## 📄 Research Contribution
 
 This project introduces a data-driven adaptive filtering pipeline that dynamically identifies noise characteristics and applies appropriate filtering strategies, improving ECG signal quality without distorting physiological features.
 
@@ -102,4 +104,3 @@ Aanya Chandrakar
 
 📬 Contact
 📧 aanya25100@iiitnr.edu.in
-
