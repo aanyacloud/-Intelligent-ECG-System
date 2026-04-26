@@ -23,33 +23,35 @@ An adaptive ECG signal processing system for **noise reduction, signal enhanceme
 
 ## 📊 Results
 
-### 🔹 SNR Improvement
+### 🔹 Average SNR Improvement
+![SNR Bar](results/snr_bar.png)
 
-::contentReference[oaicite:0]{index=0}
-
-
-✔ Average SNR improved from **15.79 dB → 19.09 dB**
+✔ Improved from **15.79 dB → 19.09 dB**
 
 ---
 
-### 🔹 Per Record Performance
+### 🔹 SNR per Record
+![SNR Line](results/snr_line.png)
 
-::contentReference[oaicite:1]{index=1}
+---
 
+### 🔹 SNR Distribution
+![SNR Box](results/snr_box.png)
 
 ---
 
 ### 🔹 ECG Signal with R-Peaks
-
-::contentReference[oaicite:2]{index=2}
-
+![ECG](results/EEG.png)
 
 ---
 
-### 🔹 HR & RR Analysis
+### 🔹 RR Interval Variation
+![RR Variation](results/Variation.png)
 
-::contentReference[oaicite:3]{index=3}
+---
 
+### 🔹 Heart Rate Over Time
+![HR](results/Heart Rate.png)
 
 ---
 
@@ -84,3 +86,19 @@ An adaptive ECG signal processing system for **noise reduction, signal enhanceme
 ```bash
 pip install -r requirements.txt
 streamlit run app.py
+
+☁️ Deployment
+
+Deployed using Streamlit Cloud
+
+
+📄 Research Contribution
+
+This project introduces a data-driven adaptive filtering pipeline that dynamically identifies noise characteristics and applies appropriate filtering strategies, improving ECG signal quality without distorting physiological features.
+
+👨‍💻 Author
+Aanya Chandrakar
+
+📬 Contact
+
+📧 aanya25100@iiitnr.edu.in
