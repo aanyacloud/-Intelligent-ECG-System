@@ -87,11 +87,12 @@ An adaptive ECG signal processing system for **noise reduction, signal enhanceme
 pip install -r requirements.txt
 streamlit run app.py
 
+---
 ☁️ Deployment
 
 Deployed using Streamlit Cloud
 
-
+---
 📄 Research Contribution
 
 This project introduces a data-driven adaptive filtering pipeline that dynamically identifies noise characteristics and applies appropriate filtering strategies, improving ECG signal quality without distorting physiological features.
@@ -100,5 +101,5 @@ This project introduces a data-driven adaptive filtering pipeline that dynamical
 Aanya Chandrakar
 
 📬 Contact
-
 📧 aanya25100@iiitnr.edu.in
+
