@@ -95,12 +95,12 @@ streamlit run app.py
 Deployed using Streamlit Cloud
 🔗 https://6cmukok4vrrxpuz6frhvdy.streamlit.app/
 
-## 📄 Research Contribution
+📄 Research Contribution
 
 This project introduces a data-driven adaptive filtering pipeline that dynamically identifies noise characteristics and applies appropriate filtering strategies, improving ECG signal quality without distorting physiological features.
 
-👨‍💻 Author
+👨‍💻 Authors
 Aanya Chandrakar
-
 📬 Contact
+
 📧 aanya25100@iiitnr.edu.in
